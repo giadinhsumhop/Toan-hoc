@@ -112,7 +112,7 @@ return 'Đã lưu kết quả.'}catch(e){return 'Lưu lỗi: '+e.message+' (đã
 async function finish(btn,topic){btn.disabled=true;const m=await save(topic,null,null,true);btn.parentElement.nextElementSibling.textContent=m;if(m.includes('✅'))spawn('🎉',8)}
 
 const ST={a:'Tất cả',l:'Lý thuyết',c:'Tính toán'};
-let qt='a',qn=10,qi=0,sc=0,qs=[],qrun=false;
+let qt='a',qn=10,qi=0,sc=0,qs=[],qrun=false,curTest=null;
 /* ===== Bài học ===== */
 const LS=[
 ['🧩','Hằng đẳng thức và phân tích đa thức',8,`<ul><li>(a + b)² = a² + 2ab + b²; (a − b)² = a² − 2ab + b²; <b>a² − b² = (a − b)(a + b)</b>.</li><li>(a + b)³ = a³ + 3a²b + 3ab² + b³; a³ + b³ = (a + b)(a² − ab + b²); a³ − b³ = (a − b)(a² + ab + b²).</li><li><b>Phân tích thành nhân tử:</b> đặt nhân tử chung, dùng hằng đẳng thức, nhóm hạng tử. Ví dụ: x² − 9 = (x − 3)(x + 3).</li></ul><p class="tip">💡 Phân tích xong, hãy nhân lại để kiểm tra kết quả.</p>`],
@@ -129,7 +129,7 @@ const LS=[
 ['📏','Hệ thức lượng trong tam giác vuông',9,`<p>Tam giác ABC vuông tại A, đường cao AH. Đặt BC = a, AC = b, AB = c, BH = c′, CH = b′, AH = h.</p><ul><li>b² = a·b′; c² = a·c′; <b>h² = b′·c′</b>; a·h = b·c; 1/h² = 1/b² + 1/c².</li><li><b>sin</b> = đối / huyền; <b>cos</b> = kề / huyền; <b>tan</b> = đối / kề; <b>cot</b> = kề / đối.</li><li>sin²α + cos²α = 1. sin góc này bằng cos góc phụ với nó.</li></ul><p class="tip">💡 Nhớ: "sin đi học, cos không hư, tan đoàn kết, cot kết đoàn".</p>`],
 ['⭕','Đường tròn',9,`<ul><li>Góc ở tâm có số đo bằng số đo cung bị chắn. <b>Góc nội tiếp bằng nửa số đo cung bị chắn</b>.</li><li>Các góc nội tiếp cùng chắn một cung thì bằng nhau. Góc nội tiếp chắn nửa đường tròn bằng 90°.</li><li><b>Tiếp tuyến</b> vuông góc với bán kính tại tiếp điểm. Hai tiếp tuyến cắt nhau thì điểm đó cách đều hai tiếp điểm.</li><li>Tứ giác nội tiếp có tổng hai góc đối bằng 180°.</li><li>Chu vi C = 2πR; diện tích S = πR².</li></ul>`],
 ['🥫','Hình trụ, hình nón, hình cầu',9,`<ul><li><b>Hình trụ:</b> S<sub>xq</sub> = 2πrh; V = πr²h.</li><li><b>Hình nón:</b> S<sub>xq</sub> = πrl; V = ⅓πr²h; l² = r² + h².</li><li><b>Hình cầu:</b> S = 4πR²; V = ⁴⁄₃πR³.</li></ul><p class="tip">💡 Thể tích hình nón bằng một phần ba thể tích hình trụ cùng đáy và chiều cao.</p>`]];
-$('#les').innerHTML='<p class="hint">Chạm vào từng bài để mở. Mỗi bài có một mẹo nhớ 💡</p>'+LS.map((l,i)=>(i==0||LS[i-1][2]!=l[2]?`<h2 class="gh">Toán ${l[2]}</h2>`:'')+`<details class="card"${i==0?' open':''}><summary><span>${l[0]}</span> ${i+1}. ${l[1]}</summary>${l[3]}</details>`).join('');
+$('#les').innerHTML='<p class="hint">Chạm vào từng bài để mở. Mỗi bài có một mẹo nhớ 💡</p>'+LS.map((l,i)=>(i==0||LS[i-1][2]!=l[2]?`<h2 class="gh">Toán ${l[2]}</h2>`:'')+`<details class="card"${i==0?' open':''}><summary><span>${l[0]}</span> ${i+1}. ${l[1]}</summary>${l[3]}<div class="row"><button class="btn" onclick="lessonTest(${i})">📝 Kiểm tra 20 câu</button></div></details>`).join('');
 /* ===== Thực hành ===== */
 const SKL=['Giải phương trình bậc hai','Vẽ đồ thị hàm số','Giải hệ hai phương trình','Tam giác vuông','Rút gọn căn bậc hai'];
 const num=(id)=>parseFloat($('#'+id).value);
@@ -200,37 +200,81 @@ const GC=[
 ()=>{const a=ri(2,9),b=ri(2,9);return rnd([0,1])?G(`Hộp có ${a} bi đỏ và ${b} bi xanh. Lấy ngẫu nhiên một bi. Xác suất lấy được bi đỏ là bao nhiêu?`,`${a/gcd(a,a+b)}/${(a+b)/gcd(a,a+b)}`,[`${b/gcd(b,a+b)}/${(a+b)/gcd(b,a+b)}`,`${a/gcd(a,b)}/${b/gcd(a,b)}`,`1/${a+b}`,`${a}/${b+1}`],`P = số bi đỏ / tổng số bi = ${a}/${a+b} (rút gọn nếu được).`):(()=>{const m=ri(4,9),v=Array.from({length:5},()=>ri(m-3,m+3)),s=v.reduce((x,y)=>x+y,0),mean=s/5;return G(`Điểm 5 bài kiểm tra là ${v.join('; ')}. Điểm trung bình cộng là bao nhiêu?`,mean,[s,Math.max(...v),mean*5/4],`Trung bình = ${s} / 5 = ${fm(mean)}.`)})()},
 ()=>{const a=rnd([1,2,3,-1,-2]),x=ri(-4,4)||2;return G(`Điểm có hoành độ ${x} trên parabol y = ${a}x² có tung độ bằng bao nhiêu?`,a*x*x,[a*x,(a*x)**2,a*2*x],`y = ${a}·${x}² = ${a*x*x}.`)},
 ()=>{const a=rnd([2,3,4,-2,-3]),x0=rnd([-4,-3,-2,2,3,4]),b=ri(-6,6),c=a*x0+b,g=a>0?'>':'<',r=`x ${g} ${x0}`;return mk('c',`Giải bất phương trình ${a}x ${sg(b)} ${Math.abs(b)} > ${c}.`,r,[`x ${g=='>'?'<':'>'} ${x0}`,`x > ${-x0}`,`x < ${-x0}`],`${a}x > ${c-b} nên ${a>0?'x > '+x0:'x < '+x0}${a<0?' (đổi chiều vì chia cho số âm)':''}.`)},
-()=>{const AD=rnd([4,6,8]),r=rnd([2,3]),AE=rnd([3,4,5,6]);return G(`Cho DE ∥ BC với D thuộc AB, E thuộc AC. Biết AD = ${AD}, AB = ${AD*r}, AE = ${AE}. Độ dài AC bằng bao nhiêu?`,AE*r,[AE+AD*r-AD,AE*AD,AE/r],`Thalès: AD/AB = AE/AC nên AC = AE·AB/AD = ${AE*r}.`)}];
+()=>{const AD=rnd([4,6,8]),r=rnd([2,3]),AE=rnd([3,4,5,6]);return G(`Cho DE ∥ BC với D thuộc AB, E thuộc AC. Biết AD = ${AD}, AB = ${AD*r}, AE = ${AE}. Độ dài AC bằng bao nhiêu?`,AE*r,[AE+AD*r-AD,AE*AD,AE/r],`Thalès: AD/AB = AE/AC nên AC = AE·AB/AD = ${AE*r}.`)},
+()=>{const a=ri(2,9),p=rnd([1,2,3,5]),sg1=rnd([1,-1]);return G(`Phân thức ${p}/(x ${sg(sg1*a)} ${a}) xác định khi nào?`,`x ≠ ${-sg1*a}`,[`x ≠ ${sg1*a}`,`x = ${-sg1*a}`,'x ≠ 0',`x ≠ ${a*a}`],`Mẫu x ${sg(sg1*a)} ${a} phải khác 0 nên x ≠ ${-sg1*a}.`)},
+()=>{const a=ri(2,9),k=ri(0,2),f=[[`(x² − ${a*a})/(x − ${a})`,`x + ${a}`,[`x − ${a}`,`x² + ${a*a}`,`x + ${a*a}`,`${a}x`]],[`(x² + ${2*a}x + ${a*a})/(x + ${a})`,`x + ${a}`,[`x − ${a}`,`x + ${2*a}`,`x² + ${a}`,`${a}x`]],[`(x² − ${2*a}x + ${a*a})/(x − ${a})`,`x − ${a}`,[`x + ${a}`,`x − ${2*a}`,`x² − ${a}`,`${a}x`]]][k];return G(`Rút gọn phân thức ${f[0]}.`,f[1],f[2],`Phân tích tử thành nhân tử rồi triệt tiêu nhân tử chung, kết quả là ${f[1]}.`)}];
 function best(k,v){try{if(v!=null)localStorage.setItem('toan'+k,v);return +localStorage.getItem('toan'+k)||0}catch(e){return 0}}
 function chp(box,items,cur,set){const b=$(box);b.innerHTML='';items.forEach(([k,l])=>{const x=document.createElement('button');x.className='chip';x.textContent=l;x.setAttribute('aria-pressed',k==cur());x.onclick=()=>{set(k);chp(box,items,cur,set)};b.appendChild(x)})}
 function begin(){const st=Q.filter(q=>qt=='a'||q[0]==qt),g=()=>rnd(GEN)();let l;
 if(qt=='c')l=Array.from({length:qn},g);else if(qt=='a'){const k=Math.round(qn*.3);l=[...shuf(st).slice(0,qn-k),...Array.from({length:k},g)]}else l=shuf(st).slice(0,qn);
 qs=shuf(l);qi=0;sc=0;qrun=true;qz()}
 function qz(){const el=$('#quiz');
-if(!qrun){el.innerHTML=`<h3>Luyện tập ngẫu nhiên 🎲</h3><p class="hint">Mỗi lần bấm Bắt đầu, câu hỏi và thứ tự đáp án đều được xáo trộn. Câu tính toán tự sinh số liệu mới nên không bao giờ trùng.</p><b>Chủ đề</b><div class="chips" id="qc"></div><p style="margin:8px 0 4px"><b>Số câu</b></p><div class="chips" id="qn"></div><div class="row"><button class="btn" id="go">Bắt đầu 🚀</button></div><p class="hint">Kho hiện có ${Q.length} câu soạn sẵn và không giới hạn câu tính toán tự sinh.</p>`;
+if(!qrun){curTest=null;el.innerHTML=`<h3>Luyện tập ngẫu nhiên 🎲</h3><p class="hint">Mỗi lần bấm Bắt đầu, câu hỏi và thứ tự đáp án đều được xáo trộn. Câu tính toán tự sinh số liệu mới nên không bao giờ trùng.</p><b>Chủ đề</b><div class="chips" id="qc"></div><p style="margin:8px 0 4px"><b>Số câu</b></p><div class="chips" id="qn"></div><div class="row"><button class="btn" id="go">Bắt đầu 🚀</button></div><p class="hint">Kho hiện có ${Q.length} câu soạn sẵn và không giới hạn câu tính toán tự sinh.</p>`;
 chp('#qc',Object.entries(ST),()=>qt,k=>qt=k);chp('#qn',[[10,'10 câu'],[20,'20 câu'],[30,'30 câu']],()=>qn,k=>qn=+k);$('#go').onclick=begin;return}
-if(qi>=qs.length){const b=Math.max(best(qt),sc);best(qt,b);
-el.innerHTML=`<h3>Bạn đúng ${sc}/${qs.length} câu</h3><p>${sc==qs.length?'Tuyệt vời, nhà hoá học thực thụ! 🏆':sc>=qs.length*.7?'Khá lắm! Ôn thêm chút nữa là hoàn hảo.':'Đừng nản, xem lại bài học rồi thử bộ câu khác nhé.'}</p><p class="hint">Điểm cao nhất ở chủ đề ${ST[qt]}: ${b}</p><div class="row"><button class="btn" id="ag">Bộ câu khác 🔀</button><button class="btn alt" id="bk2">Đổi chủ đề</button></div>`;
+if(qi>=qs.length){const bk=qt=='test'?'t'+curTest:qt,b=Math.max(best(bk),sc);best(bk,b);
+el.innerHTML=`<h3>Bạn đúng ${sc}/${qs.length} câu</h3><p>${sc==qs.length?'Tuyệt vời, nhà hoá học thực thụ! 🏆':sc>=qs.length*.7?'Khá lắm! Ôn thêm chút nữa là hoàn hảo.':'Đừng nản, xem lại bài học rồi thử bộ câu khác nhé.'}</p><p class="hint">Điểm cao nhất ${qt=='test'?'của bài kiểm tra này':'ở chủ đề '+ST[qt]}: ${b}</p><div class="row"><button class="btn" id="ag">Bộ câu khác 🔀</button><button class="btn alt" id="bk2">Đổi chủ đề</button></div>`;
 if(sc==qs.length)spawn('🎉',10);const pct=sc/qs.length*100;
-save('quiz-'+qt,sc,qs.length,!!P.get('quiz')&&pct>=PASS).then(m=>{if(qi>=qs.length&&qrun)el.insertAdjacentHTML('beforeend',`<p class="hint">${esc(m)}${P.get('quiz')&&pct<PASS?` Cần đạt ${PASS}% để hoàn thành bài được giao. Thử bộ câu khác nhé!`:''}</p>`)});$('#ag').onclick=begin;$('#bk2').onclick=()=>{qrun=false;qz()};return}
-const q=qs[qi];el.innerHTML=`<div class="bar"><i style="width:${qi/qs.length*100}%"></i></div><p class="hint">${ST[qt]} – câu ${qi+1}/${qs.length}</p><h3>${sub(q[1])}</h3>`+q[2].map((o,i)=>[o,i]).sort(()=>Math.random()-.5).map(([o,i])=>`<button class="opt" data-i="${i}">${sub(o)}</button>`).join('')+'<div id="fb"></div>';
+save(qt=='test'?'test-'+(curTest+1):'quiz-'+qt,sc,qs.length,(!!P.get('quiz')||!!P.get('test'))&&pct>=PASS).then(m=>{if(qi>=qs.length&&qrun)el.insertAdjacentHTML('beforeend',`<p class="hint">${esc(m)}${(P.get('quiz')||P.get('test'))&&pct<PASS?` Cần đạt ${PASS}% để hoàn thành bài được giao. Thử bộ câu khác nhé!`:''}</p>`)});$('#ag').onclick=begin;$('#bk2').onclick=()=>{qrun=false;curTest=null;qz()};return}
+const q=qs[qi];el.innerHTML=`<div class="bar"><i style="width:${qi/qs.length*100}%"></i></div><p class="hint">${ST[qt]||'Kiểm tra bài '+(curTest+1)} – câu ${qi+1}/${qs.length}</p><h3>${sub(q[1])}</h3>`+q[2].map((o,i)=>[o,i]).sort(()=>Math.random()-.5).map(([o,i])=>`<button class="opt" data-i="${i}">${sub(o)}</button>`).join('')+'<div id="fb"></div>';
 el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
 el.querySelectorAll('.opt').forEach(x=>{x.disabled=true;if(+x.dataset.i===q[3])x.classList.add('ok')});
 if(i===q[3]){sc++;spawn('⭐',5)}else b.classList.add('no');
 $('#fb').innerHTML=`<div class="why"><b>${i===q[3]?'Chính xác! 🎉':'Chưa đúng 😅'}</b> ${sub(q[4])}</div><div class="row"><button class="btn" id="nx">${qi==qs.length-1?'Xem kết quả':'Câu tiếp'}</button></div>`;
 $('#nx').onclick=()=>{qi++;qz()}})}
 
-function begin(){const S=shuf(Q),l=[],seen=new Set();let tr=0;
+function begin(){if(curTest!=null)return lessonTest(curTest);const S=shuf(Q),l=[],seen=new Set();let tr=0;
 while(l.length<qn&&tr++<qn*8){const t=qt=='a'?(Math.random()<.5?'l':'c'):qt;
 const q=(t=='l'&&S.length)?S.pop():rnd(GC)();if(seen.has(q[1]))continue;seen.add(q[1]);l.push(q)}
 qs=l;qi=0;sc=0;qrun=true;qz()}
+const QX={1:[['l','Phân thức A/B có nghĩa khi nào?',['B ≠ 0', 'A ≠ 0', 'A·B ≠ 0', 'A > B'],0,'Mẫu thức phải khác 0.'],
+['l','Muốn cộng hai phân thức khác mẫu, ta phải làm gì trước?',['Quy đồng mẫu thức', 'Nhân hai tử thức', 'Đổi dấu hai mẫu', 'Rút gọn từng mẫu'],0,'Quy đồng mẫu rồi cộng các tử.'],
+['l','Chia phân thức A/B cho C/D (C ≠ 0) bằng:',['(A/B)·(D/C)', '(A/B)·(C/D)', '(B/A)·(C/D)', '(A·C)/(B·D)'],0,'Nhân với phân thức nghịch đảo của số chia.'],
+['l','Hai phân thức A/B và C/D bằng nhau khi:',['A·D = B·C', 'A·C = B·D', 'A + D = B + C', 'A·B = C·D'],0,'Hai tích chéo bằng nhau.'],
+['l','Để rút gọn phân thức ta cần:',['Phân tích tử và mẫu thành nhân tử rồi bỏ nhân tử chung', 'Cộng cả tử và mẫu với cùng một số', 'Bình phương cả tử và mẫu', 'Đổi chỗ tử và mẫu'],0,'Chia cả tử và mẫu cho nhân tử chung.']],
+4:[['l','Hình bình hành có tính chất nào sau đây?',['Hai đường chéo cắt nhau tại trung điểm mỗi đường', 'Hai đường chéo bằng nhau', 'Hai đường chéo vuông góc', 'Bốn góc vuông'],0,'Đó là tính chất đường chéo của hình bình hành.'],
+['l','Hình chữ nhật có hai đường chéo:',['Bằng nhau và cắt nhau tại trung điểm', 'Vuông góc với nhau', 'Không bằng nhau', 'Song song với nhau'],0,'Hai đường chéo hình chữ nhật bằng nhau.'],
+['l','Tứ giác có bốn cạnh bằng nhau là:',['Hình thoi', 'Hình thang', 'Hình chữ nhật', 'Hình thang cân'],0,'Hình thoi có bốn cạnh bằng nhau.'],
+['l','Hình thoi có hai đường chéo:',['Vuông góc với nhau', 'Bằng nhau', 'Song song với nhau', 'Không cắt nhau'],0,'Đường chéo hình thoi vuông góc và là phân giác của các góc.'],
+['l','Tam giác có ba cạnh 6, 8, 10 là tam giác gì?',['Tam giác vuông', 'Tam giác nhọn', 'Tam giác tù', 'Tam giác đều'],0,'6² + 8² = 10² nên theo định lí Pythagore đảo đó là tam giác vuông.'],
+['l','Hình vuông là hình:',['Vừa là hình chữ nhật vừa là hình thoi', 'Chỉ là hình thoi', 'Chỉ là hình chữ nhật', 'Là hình thang cân'],0,'Hình vuông có bốn góc vuông và bốn cạnh bằng nhau.']],
+5:[['l','Nếu ΔABC ∽ ΔDEF theo tỉ số k thì tỉ số diện tích bằng:',['k²', 'k', '2k', '√k'],0,'Tỉ số diện tích bằng bình phương tỉ số đồng dạng.'],
+['l','Hai tam giác đồng dạng theo trường hợp g.g khi:',['Có hai cặp góc bằng nhau', 'Có hai cặp cạnh bằng nhau', 'Có một cặp góc bằng nhau', 'Có chu vi bằng nhau'],0,'Hai cặp góc bằng nhau thì đồng dạng (g.g).'],
+['l','AD là đường phân giác trong của tam giác ABC (D thuộc BC). Hệ thức đúng là:',['DB/DC = AB/AC', 'DB/DC = AC/AB', 'DB = DC', 'AD = BD'],0,'Tính chất đường phân giác: DB/DC = AB/AC.'],
+['l','Tỉ số chu vi của hai tam giác đồng dạng theo tỉ số k là:',['k', 'k²', '1/k', '2k'],0,'Chu vi tỉ lệ với tỉ số đồng dạng.'],
+['l','Định lí Thalès đảo: nếu AD/AB = AE/AC thì:',['DE ∥ BC', 'DE ⊥ BC', 'DE = BC', 'AD = AE'],0,'Các đoạn thẳng tương ứng tỉ lệ thì đường thẳng song song với cạnh còn lại.'],
+['l','Hai tam giác vuông đồng dạng khi có:',['Một cặp góc nhọn bằng nhau', 'Một cặp cạnh bằng nhau', 'Cùng chu vi', 'Cùng diện tích'],0,'Hai tam giác vuông có một cặp góc nhọn bằng nhau thì đồng dạng.']],
+7:[['l','Điều kiện để √A có nghĩa là:',['A ≥ 0', 'A > 0', 'A ≤ 0', 'A ≠ 0'],0,'Biểu thức dưới dấu căn bậc hai phải không âm.'],
+['l','√(a·b) = √a·√b khi:',['a ≥ 0 và b ≥ 0', 'a và b bất kì', 'a < 0 và b < 0', 'a = b'],0,'Quy tắc nhân các căn bậc hai áp dụng khi hai số không âm.'],
+['l','√49 bằng:',['7', '−7', '±7', '24,5'],0,'Căn bậc hai số học là số không âm.'],
+['l','∛(−8) bằng:',['−2', '2', '−4', 'Không tồn tại'],0,'Căn bậc ba xác định với mọi số thực: (−2)³ = −8.'],
+['l','Trục căn thức ở mẫu của 1/√3 ta được:',['√3/3', '√3', '1/3', '3√3'],0,'Nhân tử và mẫu với √3.']],
+8:[['l','Hệ x + y = 3 và x − y = 1 có nghiệm (x; y) là:',['(2; 1)', '(1; 2)', '(3; 0)', '(0; 3)'],0,'Cộng hai phương trình: 2x = 4 nên x = 2, y = 1.'],
+['l','Hệ x + y = 2 và 2x + 2y = 4 có bao nhiêu nghiệm?',['Vô số nghiệm', 'Một nghiệm', 'Vô nghiệm', 'Hai nghiệm'],0,'Hai phương trình tương đương nhau nên có vô số nghiệm.'],
+['l','Hệ x + y = 1 và x + y = 3 có bao nhiêu nghiệm?',['Vô nghiệm', 'Một nghiệm', 'Vô số nghiệm', 'Hai nghiệm'],0,'Hai đường thẳng song song nên hệ vô nghiệm.'],
+['l','Phương pháp cộng đại số dùng để:',['Khử bớt một ẩn bằng cách cộng hoặc trừ hai vế', 'Nhân hai phương trình với nhau', 'Bình phương hai vế', 'Đổi chỗ hai ẩn'],0,'Cộng hoặc trừ hai phương trình để mất một ẩn.']],
+11:[['l','Trong tam giác vuông, cos của góc nhọn bằng:',['Cạnh kề / cạnh huyền', 'Cạnh đối / cạnh huyền', 'Cạnh đối / cạnh kề', 'Cạnh kề / cạnh đối'],0,'cos = kề / huyền.'],
+['l','tan của góc nhọn bằng:',['Cạnh đối / cạnh kề', 'Cạnh kề / cạnh đối', 'Cạnh đối / cạnh huyền', 'Cạnh kề / cạnh huyền'],0,'tan = đối / kề.'],
+['l','Với góc nhọn α, sin²α + cos²α bằng:',['1', '0', '2', 'sin 2α'],0,'Đây là hệ thức cơ bản: sin²α + cos²α = 1.'],
+['l','Tam giác ABC vuông tại A có đường cao AH. Hệ thức nào sau đây đúng?',['AH·BC = AB·AC', 'AH = AB + AC', 'AH² = AB² + AC²', 'AH·AB = AC·BC'],0,'Diện tích tam giác tính theo hai cách: a·h = b·c.']],
+13:[['l','Công thức thể tích hình trụ là:',['V = πr²h', 'V = ⅓πr²h', 'V = 2πrh', 'V = ⁴⁄₃πr³'],0,'Thể tích hình trụ bằng diện tích đáy nhân chiều cao.'],
+['l','Công thức diện tích xung quanh hình trụ là:',['2πrh', 'πrh', 'πr²h', '2πr²'],0,'Diện tích xung quanh = chu vi đáy × chiều cao.'],
+['l','Công thức thể tích hình nón là:',['V = ⅓πr²h', 'V = πr²h', 'V = πrl', 'V = ⁴⁄₃πr³'],0,'Thể tích hình nón bằng một phần ba thể tích hình trụ cùng đáy, cùng chiều cao.'],
+['l','Diện tích xung quanh hình nón là:',['πrl', '2πrl', 'πr²l', '⅓πrl'],0,'S xq = πrl với l là đường sinh.'],
+['l','Diện tích mặt cầu bán kính R là:',['4πR²', 'πR²', '2πR²', '⁴⁄₃πR²'],0,'S = 4πR².'],
+['l','Hình nón có bán kính đáy r, chiều cao h thì đường sinh l bằng:',['√(r² + h²)', 'r + h', '√(h² − r²)', 'r·h'],0,'Tam giác vuông tạo bởi r, h, l: l² = r² + h².']]};
+const LT=[{s:[0,1],g:[1,2]},{s:[],g:[17,18]},{s:[2,3,4],g:[3,4]},{s:[15],g:[0,15]},{s:[5],g:[5]},{s:[6],g:[16]},{s:[16],g:[13]},{s:[7],g:[6]},{s:[],g:[9]},{s:[8,9],g:[7,8]},{s:[10],g:[14]},{s:[11,12],g:[10]},{s:[13,14],g:[11]},{s:[],g:[12]}];
+function lessonTest(i){const T=LT[i],pool=[...T.s.map(k=>Q[k]),...(QX[i]||[])],l=[],seen=new Set();
+for(const q of shuf(pool)){if(l.length>=8)break;if(!seen.has(q[1])){seen.add(q[1]);l.push(q)}}
+for(let tr=0;l.length<20&&tr<600;tr++){const q=GC[rnd(T.g)]();if(!seen.has(q[1])){seen.add(q[1]);l.push(q)}}
+for(const q of shuf(pool)){if(l.length>=20)break;if(!seen.has(q[1])){seen.add(q[1]);l.push(q)}}
+qs=shuf(l).map(q=>q);qt='test';curTest=i;qn=qs.length;qi=0;sc=0;qrun=true;document.querySelector('nav [data-t=t3]').click();qz();window.scrollTo(0,0)}
 function assigned(){const b=+P.get('bai'),k=P.get('kn'),q=P.get('quiz'),a=$('#asg'),go=t=>document.querySelector(`nav [data-t=${t}]`).click(),
 dn=id=>`<div class="row"><button class="btn" onclick="finish(this,'${id}')">✅ Mình đã học xong</button></div><p class="hint"></p>`,
 bn=t=>{a.style.display='block';a.innerHTML='📌 <b>Bài được giao:</b> '+t};
-if(b&&LS[b-1]){bn(`Bài ${b}. ${esc(LS[b-1][1])}`);const d=$('#les').querySelectorAll('details')[b-1];d.open=true;d.insertAdjacentHTML('beforeend',dn('bai-'+b));go('t0');setTimeout(()=>d.scrollIntoView(),60)}
+const tt=+P.get('test');if(tt&&LS[tt-1]){bn(`Kiểm tra bài ${tt}. ${esc(LS[tt-1][1])} (20 câu, cần đạt ${PASS}%)`);lessonTest(tt-1)}else if(b&&LS[b-1]){bn(`Bài ${b}. ${esc(LS[b-1][1])}`);const d=$('#les').querySelectorAll('details')[b-1];d.open=true;d.insertAdjacentHTML('beforeend',dn('bai-'+b));go('t0');setTimeout(()=>d.scrollIntoView(),60)}
 else if(k&&k.length==1&&'ABCDE'.includes(k)){const i='ABCDE'.indexOf(k),d=[...$('#sk').children].filter(x=>x.tagName=='DETAILS')[i];bn(`${k}. ${SKL[i]}`);d.open=true;d.insertAdjacentHTML('beforeend',dn('kn-'+k));go('t2');setTimeout(()=>d.scrollIntoView(),60)}
 else if(q&&ST[q]){qt=q;qn=+P.get('n')||10;bn(`làm ${qn} câu ${ST[q]}, cần đạt ${PASS}% để hoàn thành.`);go('t3');begin()}}
-function topicName(t){t=t.replace('toan:','');const [k,v]=t.split('-');return k=='bai'?'Bài '+v+(LS[v-1]?': '+LS[v-1][1]:''):k=='kn'?v+'. '+(SKL['ABCDE'.indexOf(v)]||''):'Luyện '+(ST[v]||v)}
+function topicName(t){t=t.replace('toan:','');const [k,v]=t.split('-');return k=='test'?'Kiểm tra bài '+v+(LS[v-1]?': '+LS[v-1][1]:''):k=='bai'?'Bài '+v+(LS[v-1]?': '+LS[v-1][1]:''):k=='kn'?v+'. '+(SKL['ABCDE'.indexOf(v)]||''):'Luyện '+(ST[v]||v)}
 async function rs(){const el=$('#rs');
 if(!sb||!ME){el.innerHTML='<h3>Kết quả</h3><p class="hint">Đăng nhập (qua Việc nhà) để xem kết quả của cả nhà.</p>';return}
 el.innerHTML='<p class="hint">Đang tải…</p>';
